@@ -1,0 +1,18 @@
+{
+  "name": "wa2",
+  "main": "wa2.js",
+  "homepage": "https://github.com/ravenscroftj/wa2",
+  "authors": [
+    "James Ravenscroft <ravenscroftj@gmail.com>"
+  ],
+  "description": "webannotator2",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

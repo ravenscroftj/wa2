@@ -1,0 +1,29 @@
+{
+    "manifest_version": 2,
+    "name": "__MSG_extName__",
+    "version": "0.1",
+
+    "default_locale": "en",
+    "description": "Web annotator tool for gathering webstruct compatible training data.",
+    "icons": {
+        "128": "icon.png"
+    },
+
+    
+    "background":{
+        "scripts":["background.js"],
+        "persistent": false
+    },
+
+    "browser_action":{
+        "default_icon": "icon.png",
+        "default_title": "__MSG_extName__",
+        "default_popup": "popup.html"
+    },
+
+    "web_accessible_resources":[
+        "options.html", "toolbar.html", "toolbar.js", "script/*.js"
+    ],
+    "permissions":["activeTab", "storage", "downloads"],
+    "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'"
+}
