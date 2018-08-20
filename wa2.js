@@ -16,6 +16,28 @@ wa2.aTag = null;
 wa2._nextID = 1;
 
 /**
+ * Force download of the current HTML
+ */
+wa2.downloadPage = function(){
+    //  Escape HTML
+    var escapedHTML = document.documentElement.innerHTML;
+
+    //  Use dummy <a /> tag to save
+    var url = window.location.pathname;
+    var fileName = url.substring(url.lastIndexOf('/')+1);
+
+    if(fileName.indexOf(".html") < 0){
+        fileName += ".html";
+    }
+
+    var link = document.createElement("a");
+    link.download = fileName;
+    link.href = "data:text/plain,"+escapedHTML;
+
+    link.click(); // trigger click/download
+}
+
+/**
  * Register to listen for window message events from toolbar
  */
 wa2.registerWindowMessageListener = function (iframe) {
@@ -31,6 +53,11 @@ wa2.registerWindowMessageListener = function (iframe) {
         if (event.data.type && (event.data.type == "DEACTIVATE_WA2")) {
             console.log("Deactivate WA2 extension")
             wa2.deactivate();
+        }
+
+        if(event.data.type && (event.data.type == "DOWNLOAD_WA2")){
+            console.log("Export annotated page")
+            wa2.downloadPage()
         }
 
     });
@@ -158,12 +185,12 @@ wa2.initPage = function () {
 wa2.nextID = function () {
     var nextID = wa2._nextID;
     wa2._nextID += 1;
-    return this.nextID;
-}
+    return nextID;
+};
 
 wa2.addAnnotation = function () {
     wa2.insertAnnotation();
-}
+};
 
 wa2.insertAnnotation = function () {
     console.log("Inserting annotation", wa2.aSelection);
