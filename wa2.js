@@ -36,15 +36,15 @@ wa2.registerWindowMessageListener = function (iframe) {
     });
 }
 
-wa2.showEdit = function(){
+wa2.showEdit = function () {
 
 }
 
-wa2.hideEdit = function(){
+wa2.hideEdit = function () {
 
 }
 
-wa2.getSelection = function(){
+wa2.getSelection = function () {
     if (window.getSelection) {
         selection = window.getSelection();
     } else {
@@ -52,13 +52,13 @@ wa2.getSelection = function(){
     }
 
     var newSelection = {
-        rangeCount : selection.rangeCount,
+        rangeCount: selection.rangeCount,
         range: [],
         text: selection.toString()
     };
     var r;
-    for (r = 0; r < selection.rangeCount; ++r ){
-        newSelection.range[r] = selection.getRangeAt( r );
+    for (r = 0; r < selection.rangeCount; ++r) {
+        newSelection.range[r] = selection.getRangeAt(r);
     }
 
     return newSelection;
@@ -91,7 +91,7 @@ wa2.initPage = function () {
     var dialog = null;
 
     // append dialog form
-    $.get(chrome.extension.getURL("/template/editform.html"), function(data){
+    $.get(chrome.extension.getURL("/template/editform.html"), function (data) {
         $(data).appendTo('body');
 
         dialog = $("#dialog-form").dialog({
@@ -105,33 +105,43 @@ wa2.initPage = function () {
             var target = $(evt.target);
 
             // if the user is interacting with the tagging form, don't reset selection.
-            if(dialog.dialog("isOpen")) {
+            if (dialog.dialog("isOpen")) {
                 return;
             }
-            
+
             selection = wa2.getSelection();
-    
-            if(selection && selection.text != "") {
-                
+
+            if (selection && selection.text != "") {
+
                 wa2.aSelection = selection;
                 console.log("Selection changed:", wa2.aSelection);
                 $('#annoText').html(wa2.aSelection.text);
 
-                form = dialog.find( "form" ).on( "submit", function( event ) {
+                form = dialog.find("form").on("submit", function (event) {
                     event.preventDefault();
                     dialog.dialog('close');
                     wa2.aTag = form.find("#tagField").val()
                     wa2.addAnnotation();
                 });
 
-                dialog.dialog('option', 'buttons', [{
-                    text: "Add Annotation",
-                    click: function(){
-                       dialog.dialog('close');
-                       wa2.aTag = form.find("#tagField").val()
-                       wa2.addAnnotation();
+                dialog.dialog('option', 'buttons', [
+                    // add annotation
+                    {
+                        text: "Add Annotation",
+                        click: function () {
+                            dialog.dialog('close');
+                            wa2.aTag = form.find("#tagField").val()
+                            wa2.addAnnotation();
+                        }
+                    },
+                    //Cancel button
+                    {
+                        "text": "Cancel",
+                        click: function () {
+                            dialog.dialog('close');
+                        }
                     }
-                }]);
+                ]);
 
                 dialog.dialog('open');
             }
@@ -145,17 +155,17 @@ wa2.initPage = function () {
 /**
  * Autoincrement next id to allocate to annotation
  */
-wa2.nextID = function(){
+wa2.nextID = function () {
     var nextID = wa2._nextID;
     wa2._nextID += 1;
     return this.nextID;
 }
 
-wa2.addAnnotation = function(){
+wa2.addAnnotation = function () {
     wa2.insertAnnotation();
 }
 
-wa2.insertAnnotation = function(){
+wa2.insertAnnotation = function () {
     console.log("Inserting annotation", wa2.aSelection);
     // create the spans to hightlight the selected text
     var aAttributes = {};
@@ -175,7 +185,7 @@ wa2.insertAnnotation = function(){
     //}
     //aAttributes["wa-subtypes"] = subtypes;
     //color = webannotator.htmlWA.getColorFromNode(sectionName);
-    color = ['white','red'];
+    color = ['white', 'red'];
     aAttributes["style"] = "color:" + color[0] + "; background-color:" + color[1] + ";";
 
     // Highlight (from Scrapbook)
@@ -184,6 +194,55 @@ wa2.insertAnnotation = function(){
     wa2.aSelection = null;
 
     $(document).tooltip();
+
+    //unbind and rebind all click-to-edit handlers
+    $('.wa2annotation').unbind("click").bind("click", function (evt) {
+
+        var target = $(evt.target);
+
+        var dialog = $("#dialog-form").dialog({
+            width: 350,
+            modal: true,
+            autoOpen: true,
+            buttons: [
+
+                // remove button
+                {
+                    "text": "Remove Annotation",
+                    click: function () {
+                        //get the child text from annotation
+                        var innerContent = target.html();
+                        console.log(innerContent);
+
+                        target.replaceWith(innerContent);
+
+
+                        dialog.dialog('close')
+                    }
+                },
+                // update button    
+                {
+                    "text": "Update Annotation",
+                    click: function () {
+                        wa2.aTag = form.find("#tagField").val();
+                        target.attr("wa-type", wa2.aTag);
+                        target.attr("title", wa2.aTag + " (click to edit)");
+                        dialog.dialog('close');
+                    }
+                },
+                //Cancel button
+                {
+                    "text": "Cancel",
+                    click: function () {
+                        dialog.dialog('close');
+                    }
+                }
+
+
+            ]
+        });
+
+    });
 }
 
 wa2.deactivate = function () {
