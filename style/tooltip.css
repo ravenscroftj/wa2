@@ -10,3 +10,12 @@
     border-radius: 15px;
     display: none;
 }
+
+#dialog-form{
+    display: none;
+}
+
+#annoText{
+    font-weight: bold;
+    font-style: italic;
+}

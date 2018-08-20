@@ -22,7 +22,7 @@
     },
 
     "web_accessible_resources":[
-        "options.html", "toolbar.html", "toolbar.js", "script/*.js"
+        "options.html", "toolbar.html", "toolbar.js", "script/*.js", "template/editform.html", "images/*.png"
     ],
     "permissions":["activeTab", "storage", "downloads"],
     "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'"

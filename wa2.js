@@ -11,6 +11,9 @@ if (typeof wa2 == "undefined") {
  * Currently selected text from page (if applicable)
  */
 wa2.aSelection = null;
+wa2.aTag = null;
+
+wa2._nextID = 1;
 
 /**
  * Register to listen for window message events from toolbar
@@ -83,29 +86,86 @@ wa2.initPage = function () {
     wa2.registerWindowMessageListener(iframe);
 
     //insert tooltip
-    $(document).append();
+    //$(document).append();
 
-    $(document).on("mouseup", function () {
-        wa2.aSelection = wa2.getSelection();
+    var dialog = null;
 
-        if(wa2.aSelection && wa2.aSelection.text != "") {
+    // append dialog form
+    $.get(chrome.extension.getURL("/template/editform.html"), function(data){
+        $(data).appendTo('body');
+
+        dialog = $("#dialog-form").dialog({
+            width: 350,
+            modal: true,
+            autoOpen: false,
+        });
+
+        $(document).on("mouseup", function (evt) {
+
+            var target = $(evt.target);
+
+            // if the user is interacting with the tagging form, don't reset selection.
+            if(dialog.dialog("isOpen")) {
+                return;
+            }
             
-            //wa2.insertAnnotation();
-        }
+            selection = wa2.getSelection();
+    
+            if(selection && selection.text != "") {
+                
+                wa2.aSelection = selection;
+                console.log("Selection changed:", wa2.aSelection);
+                $('#annoText').html(wa2.aSelection.text);
 
-    })
+                form = dialog.find( "form" ).on( "submit", function( event ) {
+                    event.preventDefault();
+                    dialog.dialog('close');
+                    wa2.aTag = form.find("#tagField").val()
+                    wa2.addAnnotation();
+                });
+
+                dialog.dialog('option', 'buttons', [{
+                    text: "Add Annotation",
+                    click: function(){
+                       dialog.dialog('close');
+                       wa2.aTag = form.find("#tagField").val()
+                       wa2.addAnnotation();
+                    }
+                }]);
+
+                dialog.dialog('open');
+            }
+        });
+
+
+    });
 
 }
 
+/**
+ * Autoincrement next id to allocate to annotation
+ */
+wa2.nextID = function(){
+    var nextID = wa2._nextID;
+    wa2._nextID += 1;
+    return this.nextID;
+}
+
+wa2.addAnnotation = function(){
+    wa2.insertAnnotation();
+}
+
 wa2.insertAnnotation = function(){
+    console.log("Inserting annotation", wa2.aSelection);
     // create the spans to hightlight the selected text
     var aAttributes = {};
     //element = content.document.getElementById("WA_data_element");
     //webannotator.WAid = Math.max(webannotator.WAid, parseInt(element.getAttribute("WA-maxid"))) + 1;
     //aAttributes["class"] = "WebAnnotator_" + sectionName;
-    aAttributes['class'] = "bob";
-    aAttributes['wa-type'] = "person";
-    aAttributes['WA-id'] = 1;
+    aAttributes['class'] = "wa2annotation";
+    aAttributes['wa-type'] = wa2.aTag;
+    aAttributes['WA-id'] = wa2.nextID();
+    aAttributes['title'] = wa2.aTag + " (click to edit)";
     //aAttributes["wa-type"] = sectionName;
     //aAttributes["WA-id"] = ""+webannotator.WAid;
     // subtype
@@ -120,13 +180,15 @@ wa2.insertAnnotation = function(){
 
     // Highlight (from Scrapbook)
     sbHighlighter.set(wa2.aSelection, aAttributes);
+
+    wa2.aSelection = null;
+
+    $(document).tooltip();
 }
 
 wa2.deactivate = function () {
     document.documentElement.removeChild(document.getElementById('wa2Toolbar'));
 }
-
-
 
 
 // prepare document ready listener
