@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "__MSG_extName__",
-    "version": "0.1",
+    "version": "0.1.1",
 
     "default_locale": "en",
     "description": "Web annotator tool for gathering webstruct compatible training data.",
